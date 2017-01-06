@@ -3,9 +3,10 @@ set(APP_NAME EvilCorp)
 
 project (${APP_NAME})
 
-if(CMAKE_BUILD_TYPE STREQUAL "")
-    set(CMAKE_BUILD_TYPE Release)
-endif(CMAKE_BUILD_TYPE STREQUAL "")
+if(CMAKE_BUILD_TYPE MATCHES "")
+	message(STATUS "BUILD_TYPE doesn't set, going set Debug")
+    set(CMAKE_BUILD_TYPE Debug)
+endif(CMAKE_BUILD_TYPE MATCHES "")
 message(STATUS "BUILD_TYPE: " ${CMAKE_BUILD_TYPE})
 
 add_compile_options(-std=c++11) # CMake 2.8.12 or newer

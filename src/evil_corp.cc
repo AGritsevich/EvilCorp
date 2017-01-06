@@ -3,9 +3,7 @@
 
 int main(int argc, char** argv) {
   try {
-    std::string param(argv[1]);
-
-    if (0 == param.compare("test")) {
+    if (argc == 2 && 0 == std::string(argv[1]).compare("test")) {
       std::cout << "Test mode running..." << std::endl;
       //assert();
       //assert();
@@ -14,7 +12,7 @@ int main(int argc, char** argv) {
     else { // Regular work
       Trade trader;
 
-      std::thread(trader.StartTrading());
+      trader.start_trading();
 
       char exit_symbol = 0;
       std::cout << "Press c or C to stop" << std::endl;
@@ -23,8 +21,8 @@ int main(int argc, char** argv) {
         exit_symbol = std::cin.get();
       } while (exit_symbol != 'c' || exit_symbol != 'C');
       
-      trader.Disable();
-      std::cout << "Total items purchased " << trader.number() << ", common summ " << trader.common_summ() << std::endl;
+      trader.disable();
+      std::cout << "Total items purchased: " << trader.total_purchased() << ", common summ: " << trader.common_summ() << std::endl;
       std::cout << "Press any key to exit..." << std::endl;
       std::cin.get();
     }

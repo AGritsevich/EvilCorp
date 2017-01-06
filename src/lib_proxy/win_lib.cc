@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <windows.h>
 
-#include "win_lib.h"
+#include "lib_proxy/win_lib.h"
 
 WinLib::WinLib() :
   _hinstLib(nullptr) {};
@@ -14,7 +14,7 @@ WinLib::~WinLib() {
 
 void* WinLib::LibraryFunction(std::string name) {
   if (_hinstLib != NULL) {
-    void* ProcAdd = GetProcAddress(_hinstLib, name.c_str());
+    void* ProcAdd = GetProcAddress(static_cast<HMODULE>(_hinstLib), name.c_str());
 
     if (NULL != ProcAdd) {
       //(ProcAdd) (L"Message sent to the DLL function\n"); 
@@ -27,7 +27,7 @@ void* WinLib::LibraryFunction(std::string name) {
 bool WinLib::Open(std::string lib_path) {
   _hinstLib = LoadLibrary(lib_path.c_str());
   
-  if (_hinstLib == NULL) {
+  if (_hinstLib == nullptr) {
     DWORD   dwLastError = ::GetLastError();
     if (dwLastError != 0)
       std::cout << "Error open library! Error code: " << dwLastError << std::endl;
@@ -38,7 +38,7 @@ bool WinLib::Open(std::string lib_path) {
 }
 
 bool WinLib::Close() {
-  bool retVal = (TRUE == FreeLibrary(_hinstLib));
+  bool retVal = (TRUE == FreeLibrary(static_cast<HMODULE>(_hinstLib)));
   _hinstLib = nullptr;
   return retVal;
 }

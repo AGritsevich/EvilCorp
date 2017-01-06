@@ -1,30 +1,35 @@
 #pragma once
 
-#include "lib_proxy/lib_proxy.h"
 #include <mutex>
 #include <deque>
 #include <memory>
 #include <condition_variable>
+#include "lib_proxy/lib_proxy.h"
+#include "api/api.h"
+
+namespace service_fun {
+  void call_back(const byte* message, const size_t size);
+} // service_fun
 
 class BlackMarket {
+  friend void service_fun::call_back(const byte* message, const size_t size);
 public:
   BlackMarket();
   ~BlackMarket();
 
-  bool see_new_item(evil::Item& item) throw;
-  bool buy_item(const evil::Item& item) throw;
+  const evil::Item & see_new_item();
+  bool buy_item(const evil::Item& item);
 
 private:
-  void asynch_get_message(const byte* message, size_t size) throw;
-  void add_new_item(const evil::Item& item) const throw;
+  void add_new_item(const evil::Item& item);
 
-  std::unique_ptr<LibProxy> _lib_helper;
+  std::unique_ptr<LibProxy> m_lib_helper;
 
-  std::mutex _asynch_func_lock;
-  std::mutex _market_collection_lock;
-  std::condition_variable _market_collection_cv;
-  std::deque<evil::Item> _market_collection;
-  uint32_t _last_viewed;
+  std::mutex m_asynch_func_lock;
+  std::mutex m_market_collection_lock;
+  std::condition_variable m_market_collection_cv;
+  std::deque<evil::Item> m_market_collection;
+  uint32_t m_last_viewed;
 
   evil::api *_rare_items;
 };

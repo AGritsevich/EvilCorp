@@ -1,68 +1,94 @@
 
-#include "black_market.h"
+#include "black_market/black_market.h"
 #include <algorithm>
+#ifdef __linux__
+#include "lib_proxy/linux_lib.h"
+const char kApiLib[] = "api.so";
+#else // WIN32
+#include "lib_proxy/win_lib.h"
+const char kApiLib[] = "api.dll";
+#endif /* WIN32 */
+
+namespace service_fun {
+  static BlackMarket *g_ptr_market = nullptr;
+
+  void call_back(const byte * message, const size_t size) {
+    static const size_t kMinSize = (sizeof(evil::RareType) + sizeof(evil::Coin));
+    if (g_ptr_market && size > kMinSize) {
+      std::unique_lock<std::mutex>(g_ptr_market->m_asynch_func_lock);
+      evil::Item new_item;
+      // memcpy_s(new_items.type, sizeof(new_items.type), message, sizeof(new_items.type));
+      // memcpu_s(new_items.thing, sizeof(new_items.thing), message + sizeof(new_items.type), size - sizeof(new_items.type));
+      new_item.type = static_cast<evil::RareType>(message[0]); // std::move(
+      new_item.thing = *reinterpret_cast<evil::Things*>(message[1]); // std::move(
+
+      g_ptr_market->add_new_item(new_item);
+      }
+  }
+} // namespace service_fun
 
 BlackMarket::BlackMarket() :
 #ifdef __linux__
-  _lib_helper(LinuxLib), 
+  m_lib_helper(new LinuxLib), 
 #else // WIN32
-  _lib_helper(WinLib),
+  m_lib_helper(new WinLib),
 #endif /* WIN32 */
-  _last_viewed(0),
+  m_last_viewed(0),
   _rare_items(nullptr) {
-  if (!_lib_helper->Open(API_LIB)) {
-    throw std::exception::runtime_error::ios_base::failure("Can't open library");
+
+  service_fun::g_ptr_market = this;
+
+  if (!m_lib_helper->Open(kApiLib)) {
+    throw std::ios_base::failure("Can't open library");
   }
 
-  if (nullptr == (_rare_items = dynamic_cast<evil::api*>(_lib_helper->LibraryFunction("api")))) {
-    throw std::exception::runtime_error::ios_base::failure("Can't load class");
+  if (nullptr == (_rare_items = reinterpret_cast<evil::api*>(m_lib_helper->LibraryFunction("api")))) {
+    throw std::ios_base::failure("Can't load class");
   }
 
-  _rare_items->get_raw_rare(&BlackMarket::asynch_get_message);
+  _rare_items->get_raw_rare(service_fun::call_back);
 }
 
 BlackMarket::~BlackMarket() {
-
 }
 
-bool BlackMarket::see_new_item(evil::Item& item) throw {
-  std::unique_lock<std::mutex> lock(_market_collection_lock);
+const evil::Item& BlackMarket::see_new_item() {
+  std::unique_lock<std::mutex> lock(m_market_collection_lock);
  
-  while (_market_collection.size() == 0) { _market_collection_cv.wait(lock); };
+  while (m_market_collection.size() == 0) { m_market_collection_cv.wait(lock); };
 
-  if (_last_viewed > _market_collection.size()) {
-    _last_viewed = 0;
+  if (m_last_viewed > m_market_collection.size()) {
+    m_last_viewed = 0;
   }
 
-  std::deque<evil::Item>::const_iterator it(_market_collection.begin());
+  std::deque<evil::Item>::const_iterator it(m_market_collection.begin());
 
-  std::advance(it, _last_viewed++);
-  item = *it;
+  std::advance(it, m_last_viewed++);
+  return *it;
 }
 
-bool BlackMarket::buy_item(const evil::Item& item) throw {
+bool BlackMarket::buy_item(const evil::Item& bought) {
+  std::unique_lock<std::mutex>(m_market_collection_lock);
   try {
-    _market_collection.erase(item);
+
+    std::deque<evil::Item>::iterator it = std::find_if(
+      m_market_collection.begin(), m_market_collection.end(), 
+      [&](evil::Item &itm) { return itm == bought;}
+    );
+
+    m_market_collection.erase(it);
 
     return true;
   }
   catch (...) {
-
+    // Probably already bought
     return false;
   }
 }
 
-void BlackMarket::add_new_item(const evil::Item& item) const throw {
-  std::unique_lock<std::mutex> lock(_market_collection_lock);
-  _market_collection.emplace_back(std::move(item));
+void BlackMarket::add_new_item(const evil::Item& item) {
+  std::unique_lock<std::mutex> lock(m_market_collection_lock);
+  m_market_collection.emplace_back(std::move(item));
   lock.unlock();
-  _market_collection_cv.notify_one();
+  m_market_collection_cv.notify_one();
 }
-
-void BlackMarket::asynch_get_message(const byte* message, size_t size) {
-  std::unique_lock<std::mutex>(_asynch_func_lock);
-  api::Item *new_item = dynamic_cast<evil::Item*>(message);
-
-  add_new_item(*new_item);
-}
-

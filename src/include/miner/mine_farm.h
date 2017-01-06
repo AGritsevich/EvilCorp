@@ -3,46 +3,40 @@
 #include <mutex>
 #include <atomic>
 #include <future>
+#include "miner/btc_miner.h"
+#include <deque>
 
-class MiningFarm : public IBTCMiner throw {
+class MiningFarm : public IBTCMiner {
 public:
   MiningFarm();
-  ~MiningFarm() override;
+  virtual ~MiningFarm();
 
-  float take_away_money() throw;
+  float take_away_money();
 
 private:
-  using Future = std::future<ReturnFarm>;
-  void disable() throw;
-  void StartMinning() throw;
-  void StartOne() throw;
-  void CollectMoney() throw;
+  using Future = std::future<float>;
+  void disable();
+  void start_minning();
+  void start_one();
+  void collect_money();
 
-  inline bool enabled() const throw { return _enabled; };
+  inline bool enabled() const { return m_enabled; };
 
-  void add_future(Future itm) throw;
-  Future future() throw;
+  void add_future(Future& itm);
+  Future future();
 
-  void summ(float money) throw;
+  void summ(float money);
 
-  std::mutex _execute_lock;
-  std::condition_variable _execute_cv;
+  std::mutex m_execute_lock;
+  std::condition_variable m_execute_cv;
   
   std::mutex _farm_lock;
-  std::deque<Future> _farm;
+  std::deque<Future> m_farm;
   
-  std::atomic<bool> _enabled;
-  std::atomic<uint64_t> _last_execute_time;
+  std::atomic<bool> m_enabled;
+  std::atomic<uint64_t> m_last_execute_time;
   static constexpr uint64_t kExecuteLimit = 10000u; // 10 sec
 
   float _mining_money;
   std::mutex _mining_money_lock;
-
-  struct ReturnFarm{
-    float summ;
-    uint64_t durration;
-    ReturnFarm() :
-      summ(0),
-      durration(0) {}
-  };
 };

@@ -1,6 +1,5 @@
 #include "lib_proxy.h"
 
-//#else // WIN32
 class WinLib : public LibProxy {
 public:
   WinLib();
@@ -13,6 +12,5 @@ public:
   bool Close() override;
 
 private:
-  HINSTANCE _hinstLib;
+  void* _hinstLib;
 };
-#endif // WIN32
