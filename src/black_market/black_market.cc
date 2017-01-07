@@ -8,26 +8,30 @@ const char kApiLib[] = "api.so";
 #include "lib_proxy/win_lib.h"
 const char kApiLib[] = "api.dll";
 #endif /* WIN32 */
+#include <future>
 
 namespace service_fun {
   static BlackMarket *g_ptr_market = nullptr;
 
   void call_back(const byte * message, const size_t size) {
-    static const size_t kMinSize = (sizeof(evil::RareType) + sizeof(evil::Coin));
-    if (g_ptr_market && size > kMinSize) {
-      std::unique_lock<std::mutex>(g_ptr_market->m_asynch_func_lock);
+    const size_t kMinSize = (sizeof(evil::RareType) + sizeof(evil::Coin));
+    if (g_ptr_market && message && size > kMinSize) {
+      std::unique_lock<std::mutex> lock(g_ptr_market->m_asynch_func_lock);
+      if (!g_ptr_market->is_enabled()) return;
+      
       evil::Item new_item;
-      // memcpy_s(new_items.type, sizeof(new_items.type), message, sizeof(new_items.type));
-      // memcpu_s(new_items.thing, sizeof(new_items.thing), message + sizeof(new_items.type), size - sizeof(new_items.type));
-      new_item.type = static_cast<evil::RareType>(message[0]); // std::move(
-      new_item.thing = *reinterpret_cast<evil::Things*>(message[1]); // std::move(
+      memcpy_s(&new_item, sizeof(new_item), message, size);
+      //memcpy_s(&new_item.type, sizeof(new_item.type), message, sizeof(new_item.type));
+      //memcpy_s(&new_item.thing, sizeof(new_item.thing), message + sizeof(new_item.type), size - sizeof(new_item.type));
 
       g_ptr_market->add_new_item(new_item);
-      }
+    }
+    g_ptr_market->update_callback();
   }
 } // namespace service_fun
 
 BlackMarket::BlackMarket() :
+  m_enabled(true),
 #ifdef __linux__
   m_lib_helper(new LinuxLib), 
 #else // WIN32
@@ -46,10 +50,12 @@ BlackMarket::BlackMarket() :
     throw std::ios_base::failure("Can't load class");
   }
 
-  _rare_items->get_raw_rare(service_fun::call_back);
+  m_call_back_thread.reset(new std::thread(service_fun::call_back, nullptr, 0));
+  //m_call_back_thread->detach();
 }
 
 BlackMarket::~BlackMarket() {
+  disable();
 }
 
 const evil::Item& BlackMarket::see_new_item() {
@@ -57,7 +63,7 @@ const evil::Item& BlackMarket::see_new_item() {
  
   while (m_market_collection.size() == 0) { m_market_collection_cv.wait(lock); };
 
-  if (m_last_viewed > m_market_collection.size()) {
+  if (m_last_viewed >= m_market_collection.size()) {
     m_last_viewed = 0;
   }
 
@@ -68,7 +74,7 @@ const evil::Item& BlackMarket::see_new_item() {
 }
 
 bool BlackMarket::buy_item(const evil::Item& bought) {
-  std::unique_lock<std::mutex>(m_market_collection_lock);
+  std::unique_lock<std::mutex> lock(m_market_collection_lock);
   try {
 
     std::deque<evil::Item>::iterator it = std::find_if(
@@ -83,6 +89,13 @@ bool BlackMarket::buy_item(const evil::Item& bought) {
   catch (...) {
     // Probably already bought
     return false;
+  }
+}
+
+void BlackMarket::disable() {
+  m_enabled = false;
+  if (m_call_back_thread->joinable()) {
+    m_call_back_thread->join();
   }
 }
 
