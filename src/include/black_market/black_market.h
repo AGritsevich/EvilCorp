@@ -4,6 +4,7 @@
 #include <deque>
 #include <memory>
 #include <condition_variable>
+#include <atomic>
 #include "lib_proxy/lib_proxy.h"
 #include "api/api.h"
 
@@ -19,10 +20,14 @@ public:
 
   const evil::Item & see_new_item();
   bool buy_item(const evil::Item& item);
+  inline void disable();
+  inline bool is_enabled() const noexcept { return m_enabled; };
 
 private:
+  inline void update_callback() { _rare_items->get_raw_rare(service_fun::call_back); };
   void add_new_item(const evil::Item& item);
 
+  std::atomic<bool> m_enabled;
   std::unique_ptr<LibProxy> m_lib_helper;
 
   std::mutex m_asynch_func_lock;
@@ -32,4 +37,6 @@ private:
   uint32_t m_last_viewed;
 
   evil::api *_rare_items;
+
+  std::unique_ptr<std::thread> m_call_back_thread;
 };

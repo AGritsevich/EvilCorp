@@ -10,19 +10,24 @@ int main(int argc, char** argv) {
       std::cout << "All tests successfully passed!" << std::endl;
     }
     else { // Regular work
+      std::cout.setstate(std::ios_base::failbit);
       Trade trader;
 
-      trader.start_trading();
+      //trader.trading();
 
-      char exit_symbol = 0;
+      int exit_symbol = 0;
+      std::cout.clear();
       std::cout << "Press c or C to stop" << std::endl;
+      std::cout.setstate(std::ios_base::failbit);
 
       do {
         exit_symbol = std::cin.get();
-      } while (exit_symbol != 'c' || exit_symbol != 'C');
+      } while (exit_symbol != 'c' && exit_symbol != 'C');
       
       trader.disable();
-      std::cout << "Total items purchased: " << trader.total_purchased() << ", common summ: " << trader.common_summ() << std::endl;
+      std::cout.clear();
+      std::cout << "\r Total items purchased: " << trader.total_purchased() << ", common summ: " << trader.common_summ();
+      std::cout.flush();
       std::cout << "Press any key to exit..." << std::endl;
       std::cin.get();
     }

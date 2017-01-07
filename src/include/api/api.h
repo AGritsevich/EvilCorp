@@ -19,6 +19,7 @@ static_assert(sizeof(Value) % 4 == 0, "value must be a multiple of 4");
 namespace evil {
   class EVIL_API api {
   public:
+    // WTF! Why it's working in my context? It's sync method
     virtual void get_raw_rare(func callback) =0;
     virtual void get_test_string(char* ptr /*366 symbols*/) =0;
     virtual ~api() {};
