@@ -66,7 +66,7 @@ namespace evil {
     Things thing;
 
     inline bool operator==(const Item& lhs) {
-      if (this->type == lhs.type) {
+      if (this->type != lhs.type) {
         return false;
       }
 

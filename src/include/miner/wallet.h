@@ -13,10 +13,10 @@ public:
   void collect_transh();
 
 private:
-  inline bool is_enabled() const {return _enabled; };
+  inline bool is_enabled() const {return m_enabled; };
 
-  std::atomic<bool> _enabled;
-  const std::chrono::milliseconds kTranshPeriod;
+  std::atomic<bool> m_enabled;
+  const uint64_t kTranshPeriod;
   std::condition_variable m_waiting_transh_cv;
   std::mutex m_transh_lock;
   // This isn't financial app, so will be enough just one double

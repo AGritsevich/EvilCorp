@@ -15,6 +15,7 @@ public:
 
   inline bool is_enable() const { return m_enabled; };
   inline void disable();
+  inline uint64_t last_execute_time() const { return m_last_execute_time; };
 
 private:
   using Future = std::future<float>;
@@ -23,7 +24,7 @@ private:
   void collect_money();
   
   void add_future(Future& itm);
-  Future future();
+  float get_money_block();
 
   void summ(float money);
 
@@ -36,7 +37,7 @@ private:
   
   std::atomic<bool> m_enabled;
   std::atomic<uint64_t> m_last_execute_time;
-  static const uint32_t kMinThreadCount = 50u;
+  static const uint32_t kMinThreadCount = 20u;
   static constexpr uint64_t kExecuteLimit = 20000u; // 20 sec
 
   float m_mining_money;

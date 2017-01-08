@@ -46,15 +46,14 @@ void MiningFarm::add_future(Future& itm) {
   m_farm_cv.notify_one();
 }
 
-MiningFarm::Future MiningFarm::future() {
+float MiningFarm::get_money_block() {
   std::unique_lock<std::mutex> lock(m_farm_lock);
   while (is_enable() && m_farm.size() < kMinThreadCount) {
     m_farm_cv.wait(lock);
   }
-  Future itm = std::move(m_farm.front());
+  float ret_money = m_farm.front().get();
   m_farm.pop_front();
-  itm.wait();
-  return itm;
+  return ret_money;
 }
 
 void MiningFarm::start_one() {
@@ -67,13 +66,12 @@ void MiningFarm::start_one() {
     m_last_execute_time = sc::duration_cast<sc::milliseconds>(after - before).count();
     return summ;
   });
-  //add_future(ret);
+  add_future(ret);
 }
 
 void MiningFarm::collect_money() {
   while (is_enable()) {
-    auto ret_type = future();
-    summ(ret_type.get());
+    summ(get_money_block());
     m_execute_cv.notify_one();
   }
 }
