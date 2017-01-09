@@ -5,17 +5,15 @@
 
 #include "linux_lib.h"
 
-LinuxLib::LinuxLib{
-  _hinstLib == nullptr;
-}
+LinuxLib::LinuxLib{}
 
 LinuxLib::~LinuxLib() {
-  Close();
+  close();
 }
 
-void* LinuxLib::LibraryFunction(std::string name) {
-  if (_hinstLib != NULL) {
-    void* funptr = dlsym(_hinstLib, name.c_str());
+void* LinuxLib::library_function(const std::string& name) {
+  if (m_hinstLib != nullptr) {
+    void* funptr = dlsym(m_hinstLib, name.c_str());
     char error* = nullptr;
     if ((error = dlerror()) != NULL) {
       std::cout << "--Error! " << dlerror() << std::endl;
@@ -26,18 +24,18 @@ void* LinuxLib::LibraryFunction(std::string name) {
   return nullptr;
 }
 
-bool LinuxLib::Open(std::string lib_path) {
-  _hinstLib = dlopen(lib_path.c_str(), RTLD_LAZY);
+bool LinuxLib::open(const std::string& lib_path) {
+  m_hinstLib = dlopen(lib_path.c_str(), RTLD_LAZY);
 
-  if (!_hinstLib) {
+  if (!m_hinstLib) {
     std::cout << "--Error! " << dlerror() << std::endl;
     return false;
   }
   return true;
 }
 
-bool LinuxLib::Close() {
-  bool retVal = (0 == dlclose(_hinstLib);
-  _hinstLib = nullptr;
+bool LinuxLib::close() {
+  bool retVal = (0 == dlclose(m_hinstLib);
+  m_hinstLib = nullptr;
   return retVal;
 }

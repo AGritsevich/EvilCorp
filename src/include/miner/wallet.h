@@ -1,5 +1,9 @@
 #pragma once
 
+#include <atomic>
+#include <stdint.h>
+#include <mutex>
+#include <memory>
 #include "miner/mine_farm.h"
 
 class Wallet {

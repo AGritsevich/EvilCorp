@@ -55,7 +55,9 @@ float MiningFarm::get_money_block() {
 }
 
 void MiningFarm::start_one() {
-  Future ret = std::async(std::launch::async, [this]()->float { //async
+  if (!is_enable()) return;
+  
+  Future ret = std::async(std::launch::async, [this]()->float {
     namespace sc = std::chrono;
     auto before = sc::system_clock::now();
     float summ = get_btc();

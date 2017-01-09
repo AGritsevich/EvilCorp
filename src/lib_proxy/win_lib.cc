@@ -5,16 +5,15 @@
 
 #include "lib_proxy/win_lib.h"
 
-WinLib::WinLib() :
-  _hinstLib(nullptr) {};
+WinLib::WinLib(){};
 
 WinLib::~WinLib() { 
-  Close(); 
+  close(); 
 };
 
-void* WinLib::LibraryFunction(std::string name) {
-  if (_hinstLib != NULL) {
-    void* ProcAdd = GetProcAddress(static_cast<HMODULE>(_hinstLib), name.c_str());
+void* WinLib::library_function(const std::string& name) {
+  if (m_hinstLib != NULL) {
+    void* ProcAdd = GetProcAddress(static_cast<HMODULE>(m_hinstLib), name.c_str());
 
     if (NULL != ProcAdd) {
       //(ProcAdd) (L"Message sent to the DLL function\n"); 
@@ -24,10 +23,10 @@ void* WinLib::LibraryFunction(std::string name) {
   return nullptr;
 }
 
-bool WinLib::Open(std::string lib_path) {
-  _hinstLib = LoadLibrary(lib_path.c_str());
+bool WinLib::open(const std::string& lib_path) {
+  m_hinstLib = LoadLibrary(lib_path.c_str());
   
-  if (_hinstLib == nullptr) {
+  if (m_hinstLib == nullptr) {
     DWORD   dwLastError = ::GetLastError();
     if (dwLastError != 0)
       std::cout << "Error open library! Error code: " << dwLastError << std::endl;
@@ -37,8 +36,8 @@ bool WinLib::Open(std::string lib_path) {
   return true;
 }
 
-bool WinLib::Close() {
-  bool retVal = (TRUE == FreeLibrary(static_cast<HMODULE>(_hinstLib)));
-  _hinstLib = nullptr;
+bool WinLib::close() {
+  bool retVal = (TRUE == FreeLibrary(static_cast<HMODULE>(m_hinstLib)));
+  m_hinstLib = nullptr;
   return retVal;
 }

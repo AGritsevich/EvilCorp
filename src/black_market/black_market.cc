@@ -37,17 +37,17 @@ BlackMarket::BlackMarket() :
   m_lib_helper(new WinLib),
 #endif /* WIN32 */
   m_last_viewed(0),
-  _rare_items(nullptr) {
+  m_rare_items(nullptr) {
 
   service_fun::g_ptr_market = this;
 
-  if (!m_lib_helper->Open(kApiLib)) {
+  if (!m_lib_helper->open(kApiLib)) {
     throw std::ios_base::failure("Can't open library");
   }
 
   if (nullptr == 
-    (_rare_items = reinterpret_cast<evil::api*>
-                                (m_lib_helper->LibraryFunction("api")))) {
+    (m_rare_items = reinterpret_cast<evil::api*>
+                                (m_lib_helper->library_function("api")))) {
     throw std::ios_base::failure("Can't load class");
   }
 

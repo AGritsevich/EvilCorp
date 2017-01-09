@@ -1,11 +1,12 @@
 #pragma once
 
-#include "api/api.h"
-#include "miner/wallet.h"
-#include "black_market/black_market.h"
 #include <atomic>
+#include <memory>
 #include <mutex>
 #include <deque>
+#include "api/api.h"
+#include "black_market/black_market.h"
+#include "miner/wallet.h"
 
 class Trade {
 public:
