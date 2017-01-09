@@ -1,16 +1,14 @@
-#include "lib_proxy.h"
+#pragma once
 
-//#ifdef __linux__ 
+#include "lib_proxy.h"
+ 
 class LinuxLib : public LibProxy {
   LinuxLib();
   ~LinuxLib() override;
 
-  void* LibraryFunction(std::string name) override;
+  void* library_function(const std::string& name) override;
 
-  bool Open(std::string lib_path) override;
+  bool open(const std::string& lib_path) override;
 
-  bool Close() override;
-
-private:
-  void* _hinstLib;
+  bool close() override;
 };

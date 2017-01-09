@@ -24,7 +24,7 @@ public:
   inline bool is_enabled() const noexcept { return m_enabled; };
 
 private:
-  inline void update_callback() { _rare_items->get_raw_rare(service_fun::call_back); };
+  inline void update_callback() { m_rare_items->get_raw_rare(service_fun::call_back); };
   void add_new_item(const evil::Item& item);
 
   std::atomic<bool> m_enabled;
@@ -36,7 +36,7 @@ private:
   std::deque<evil::Item> m_market_collection;
   uint32_t m_last_viewed;
 
-  evil::api *_rare_items;
+  evil::api *m_rare_items;
 
   std::unique_ptr<std::thread> m_call_back_thread;
 };
