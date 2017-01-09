@@ -37,7 +37,7 @@ private:
   
   std::atomic<bool> m_enabled;
   std::atomic<uint64_t> m_last_execute_time;
-  static const uint32_t kMinThreadCount = 20u;
+  static const uint32_t kMinThreadCount = 10u;
   static constexpr uint64_t kExecuteLimit = 20000u; // 20 sec
 
   float m_mining_money;
