@@ -7,9 +7,7 @@ MiningFarm::MiningFarm() :
   m_last_execute_time(0) {
 
   m_collect_money_thread.reset(new std::thread(&MiningFarm::collect_money, this));
-  //m_collect_money_thread->detach();
   m_mining_thread.reset(new std::thread(&MiningFarm::start_minning, this));
-  //m_mining_thread->detach();
 }
 
 MiningFarm::~MiningFarm() {

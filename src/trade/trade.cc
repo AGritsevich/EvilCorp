@@ -6,7 +6,6 @@
 Trade::Trade() :
   m_enabled(true) {
   m_trading_thread.reset(new std::thread(&Trade::trading, this));
-  //m_trading_thread->detach();
 };
 
 Trade::~Trade(){};

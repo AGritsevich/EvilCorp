@@ -6,7 +6,6 @@ Wallet::Wallet() :
   m_all_summ(0.0f),
   kTranshPeriod(5000) {
   m_collect_transh_thread.reset(new std::thread(&Wallet::collect_transh, this));
-  //m_collect_transh_thread->detach();
 }
 
 Wallet::~Wallet() {
