@@ -53,7 +53,6 @@ BlackMarket::BlackMarket() :
 
   m_call_back_thread.reset(
                   new std::thread(service_fun::call_back, nullptr, 0));
-  //m_call_back_thread->detach();
 }
 
 BlackMarket::~BlackMarket() {
